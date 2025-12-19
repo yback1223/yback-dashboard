@@ -42,7 +42,7 @@ public class SecurityConfig {
 						.requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
 
 						// [중요 2] 로그인, 토큰 갱신 경로는 누구나 접근 가능
-						.requestMatchers("/api/login", "/api/auth/**", "/api/logout", "/api/signup").permitAll()
+						.requestMatchers("/api/login", "/api/auth/**", "/api/logout", "/api/signup", "/api/service-groups/**").permitAll()
 
 						// Swagger 등 기타 허용
 						.requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
