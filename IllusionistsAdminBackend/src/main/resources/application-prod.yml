@@ -24,3 +24,6 @@ spring:
 jwt:
   # 운영 환경에서는 더 강력한 시크릿 키를 쓰거나 동일하게 유지
   secret: eWJhY2sKeWJhY2sKeWJhY2sKeWJhY2sKeWJhY2sKOTUxMjIz
+
+server:
+  forward-headers-strategy: framework # Nginx의 X-Forwarded-* 헤더를 신뢰함

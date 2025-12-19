@@ -12,10 +12,15 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
+        Server prodServer = new Server();
+        prodServer.setUrl("https://dashboard.ainuri.kr");
+        prodServer.setDescription("운영 서버");
+
+        Server localServer = new Server();
+        localServer.setUrl("http://localhost:8080");
+        localServer.setDescription("로컬 테스트");
+
         return new OpenAPI()
-                .servers(List.of(
-                    new Server().url("https://dashboard.ainuri.kr").description("Production Server"),
-                    new Server().url("http://localhost:8080").description("Local Server")
-                ));
+                .servers(List.of(prodServer, localServer));
     }
 }
