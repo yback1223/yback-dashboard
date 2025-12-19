@@ -31,9 +31,10 @@ services:
     build: ./IllusionistsAdminBackend  # [수정] 백엔드 폴더 경로 지정
     container_name: yback_backend
     restart: always
-    # ports: - "8080:8080"  <-- [선택] 프론트엔드 Nginx를 통해서만 접속하게 하려면 주석 처리해도 됨
+    ports: 
+      - "8080:8080" 
     expose:
-      - "8080" # 내부 네트워크에는 8080 노출
+      - "8080" 
     depends_on:
       - postgres
       - redis
