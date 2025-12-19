@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface ServiceGroupRepository extends JpaRepository<ServiceGroup, Integer> {
 	Optional<ServiceGroup> findByName(String name);
+	boolean existsByName(String name);
 }
