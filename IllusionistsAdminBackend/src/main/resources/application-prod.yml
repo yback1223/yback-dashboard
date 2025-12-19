@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    # localhost 대신 docker-compose에 적은 서비스 이름(db)을 사용
+    url: jdbc:postgresql://postgres:5432/illusionists_service_admin_db
+    username: illusionists_user
+    password: illusionists_password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: false # 운영 서버에서는 로그가 너무 많아지므로 false 권장
+        show_sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  data:
+    redis:
+      # localhost 대신 컨테이너 이름 사용
+      host: redis
+      port: 6379
+
+jwt:
+  # 운영 환경에서는 더 강력한 시크릿 키를 쓰거나 동일하게 유지
+  secret: eWJhY2sKeWJhY2sKeWJhY2sKeWJhY2sKeWJhY2sKOTUxMjIz

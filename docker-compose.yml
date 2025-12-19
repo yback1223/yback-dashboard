@@ -38,6 +38,7 @@ services:
       - postgres
       - redis
     environment:
+      SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/illusionists_service_admin_db
       SPRING_DATASOURCE_USERNAME: illusionists_user
       SPRING_DATASOURCE_PASSWORD: illusionists_password
@@ -52,7 +53,7 @@ services:
     container_name: yback_frontend
     restart: always
     ports:
-      - "80:80" # 사용자는 이제 80포트(http://localhost)로 접속
+      - "8001:80" # 사용자는 이제 80포트(http://localhost)로 접속
     depends_on:
       - backend # 백엔드가 뜬 다음에 뜨도록
     networks:
