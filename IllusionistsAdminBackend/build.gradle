@@ -1,0 +1,73 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.8'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'illusionists.serviceAdmin'
+version = '1.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    implementation("org.apache.poi:poi-ooxml:5.4.1")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13")
+    implementation("org.postgresql:postgresql:42.7.8")
+    runtimeOnly("org.postgresql:postgresql")
+    implementation("org.projectlombok:lombok:1.18.42")
+
+    annotationProcessor("org.projectlombok:lombok:1.18.42")
+    implementation("org.hibernate.orm:hibernate-spatial:6.4.4.Final")
+
+    implementation("com.querydsl:querydsl-jpa:5.1.0:jakarta")
+    annotationProcessor("com.querydsl:querydsl-apt:5.1.0:jakarta")
+    annotationProcessor("jakarta.persistence:jakarta.persistence-api")
+    annotationProcessor("jakarta.annotation:jakarta.annotation-api")
+
+
+    implementation("io.jsonwebtoken:jjwt-api:0.13.0")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.13.0")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
+
+    testImplementation("org.mockito:mockito-core")
+    testImplementation("net.bytebuddy:byte-buddy-agent:1.17.7")
+
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+}
+
+test {
+    useJUnitPlatform()
+    def byteBuddyAgent = configurations.testRuntimeClasspath.files.find { it.name.contains('byte-buddy-agent') }
+    if (byteBuddyAgent != null) {
+        jvmArgs '-javaagent:' + byteBuddyAgent.absolutePath
+    }
+}
+
+def querydslDir = "$buildDir/generated/querydsl"
+
+sourceSets {
+    main.java.srcDirs += [ querydslDir ]
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.getGeneratedSourceOutputDirectory().set(file(querydslDir))
+}
+
+clean.doLast {
+    file(querydslDir).deleteDir()
+}

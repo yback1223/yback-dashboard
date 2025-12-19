@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # 1. DB
+  postgres:
+    image: postgres:16-alpine
+    container_name: yback_postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: illusionists_service_admin_db
+      POSTGRES_USER: illusionists_user
+      POSTGRES_PASSWORD: illusionists_password
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  # 2. Redis
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  # 3. Backend (Spring Boot)
+  backend:
+    build: ./IllusionistsAdminBackend  # [수정] 백엔드 폴더 경로 지정
+    container_name: yback_backend
+    restart: always
+    # ports: - "8080:8080"  <-- [선택] 프론트엔드 Nginx를 통해서만 접속하게 하려면 주석 처리해도 됨
+    expose:
+      - "8080" # 내부 네트워크에는 8080 노출
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/illusionists_service_admin_db
+      SPRING_DATASOURCE_USERNAME: illusionists_user
+      SPRING_DATASOURCE_PASSWORD: illusionists_password
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+    networks:
+      - app-network
+
+  # 4. Frontend (Flutter + Nginx) - [추가됨]
+  frontend:
+    build: ./yback_dashboard # [수정] 프론트엔드 폴더 경로 지정
+    container_name: yback_frontend
+    restart: always
+    ports:
+      - "80:80" # 사용자는 이제 80포트(http://localhost)로 접속
+    depends_on:
+      - backend # 백엔드가 뜬 다음에 뜨도록
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
