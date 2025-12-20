@@ -10,8 +10,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal; // 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 
+@Tag(name = "User API", description = "유저 관리")
 @Slf4j
 @RestController
 @RequestMapping("/api")
@@ -21,6 +24,7 @@ public class UserController {
 
 	private final UserService userService;
 
+	@Operation(summary = "유저 조회")
 	@GetMapping("/users")
 	public ResponseEntity<List<UserResponseDto>> getUsers(
 			@AuthenticationPrincipal Integer adminId
@@ -30,6 +34,7 @@ public class UserController {
 		return ResponseEntity.ok(users);
 	}
 
+	@Operation(summary = "유저 엑셀 업로드")
 	@PostMapping(value = "/users/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE) // [핵심] consumes 추가
 	public ResponseEntity<String> uploadUserExcel(
 			@RequestParam("file") MultipartFile file,
@@ -44,6 +49,7 @@ public class UserController {
 		}
 	}
 
+	@Operation(summary = "유저 전체 삭제")
 	@DeleteMapping("/users")
 	public ResponseEntity<String> deleteAllUsers() {
 		try {

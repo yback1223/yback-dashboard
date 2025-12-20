@@ -6,7 +6,7 @@ import illusionists.serviceAdmin.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order; // [필수] 순서 지정을 위해 필요
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -17,15 +17,15 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.AuthenticationEntryPoint; // [필수 Import]
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint; // [필수 Import]
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsUtils;
 import java.util.List;
-
-import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -45,13 +45,21 @@ public class SecurityConfig {
         UserDetails admin = User.builder()
                 .username("illusionist_admin")
                 .password(passwordEncoder().encode("illusionist_admin_password"))
-                .roles(UserRole.ILLUSIONIST.name())
+                // UserRole.ILLUSIONIST.name()이 정확하지 않을 수 있으니, 확실한 문자열 "ADMIN"으로 테스트 권장
+                .roles("ADMIN") 
                 .build();
         return new InMemoryUserDetailsManager(admin);
     }
 
-    // ✅ [추가] 1. 스웨거 전용 보안 체인 (우선순위 1등)
-    // 이 설정은 오직 /swagger-ui/** 와 /v3/api-docs/** 에만 적용됩니다.
+    // ✅ [핵심] 403 대신 팝업을 띄우게 만드는 "강제 진입점"
+    @Bean
+    public AuthenticationEntryPoint swaggerAuthenticationEntryPoint() {
+        BasicAuthenticationEntryPoint entryPoint = new BasicAuthenticationEntryPoint();
+        entryPoint.setRealmName("Swagger UI Realm"); // 팝업창에 뜰 제목
+        return entryPoint;
+    }
+
+    // 1. 스웨거 전용 보안 체인 (팝업 로그인 강제 적용)
     @Bean
     @Order(1)
     public SecurityFilterChain swaggerFilterChain(HttpSecurity http) throws Exception {
@@ -59,15 +67,20 @@ public class SecurityConfig {
                 .securityMatcher("/swagger-ui/**", "/v3/api-docs/**") // 이 주소들만 납치
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().authenticated() // 무조건 로그인 필요
+                        .anyRequest().authenticated() // 로그인 안 하면 못 들어감
                 )
-                .httpBasic(withDefaults()); // 팝업 로그인 활성화!
+                .httpBasic(basic -> basic
+                        .authenticationEntryPoint(swaggerAuthenticationEntryPoint()) // 팝업 설정 연결
+                )
+                // 🔥 여기가 제일 중요! 예외(403)가 터지면 무조건 팝업 띄우게 강제함
+                .exceptionHandling(handler -> handler
+                        .authenticationEntryPoint(swaggerAuthenticationEntryPoint())
+                );
 
         return http.build();
     }
 
-    // ✅ [수정] 2. API 전용 보안 체인 (우선순위 2등)
-    // 위에서 처리 안 된 나머지 모든 요청(API)은 이 설정을 따릅니다.
+    // 2. API 전용 보안 체인 (기존 유지)
     @Bean
     @Order(2)
     public SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
@@ -80,7 +93,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/login", "/api/auth/**", "/api/logout", "/api/signup", "/api/service-groups/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                // ❌ 중요: 여기에는 .httpBasic()을 절대 넣으면 안 됨! (넣으면 API도 팝업 뜸)
+                // 여기는 팝업 뜨면 안 되니까 httpBasic 없음
                 .addFilterBefore(
                         new JwtAuthenticationFilter(jwtTokenProvider),
                         UsernamePasswordAuthenticationFilter.class
@@ -89,6 +102,7 @@ public class SecurityConfig {
         return http.build();
     }
     
+    // (CORS 설정은 그대로 유지)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
