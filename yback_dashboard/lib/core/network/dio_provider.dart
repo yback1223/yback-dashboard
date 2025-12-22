@@ -49,8 +49,11 @@ Dio dio(Ref ref) {
               clonedRequest.headers['Authorization'] = 'Bearer $newAccessToken';
               final retryResponse = await dio.fetch(clonedRequest);
               return handler.resolve(retryResponse);
-            } catch (e) {
+            } catch (error) {
+              await storage.delete(key: 'accessToken');
+              await storage.delete(key: 'refreshToken');
               await storage.deleteAll();
+              return handler.reject(e);
             }
           }
         }

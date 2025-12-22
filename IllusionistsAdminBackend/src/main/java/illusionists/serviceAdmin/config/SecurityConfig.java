@@ -61,6 +61,16 @@ public class SecurityConfig {
         };
     }
 
+    @Bean
+    public AuthenticationEntryPoint apiEntryPoint() {
+        return (request, response, authException) -> {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"Authentication required for API\"}");
+        };
+    }
+
     // 1. 스웨거 전용 보안 체인
     @Bean
     @Order(1)
@@ -94,6 +104,9 @@ public class SecurityConfig {
                         .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                         .requestMatchers("/api/login", "/api/auth/**", "/api/logout", "/api/signup", "/api/service-groups/**").permitAll()
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(handler -> handler
+                        .authenticationEntryPoint(apiEntryPoint())
                 )
                 .addFilterBefore(
                         new JwtAuthenticationFilter(jwtTokenProvider),
