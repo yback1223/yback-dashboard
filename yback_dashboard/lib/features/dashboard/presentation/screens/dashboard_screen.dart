@@ -132,7 +132,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         leadingWidth: 250, 
         leading: Padding(
           padding: const EdgeInsets.only(left: 16.0),
-          child: Row(
+
+          child: InkWell(
+            mouseCursor: SystemMouseCursors.click,
+            onTap: () {
+              setState(() {
+                _searchQuery = "";
+                _selectedServiceType = "전체";
+                _sortColumnIndex = null;
+                _isAscending = true;
+                _searchController.clear(); // 텍스트 필드 비우기
+              });
+              ref.invalidate(dashboardViewModelProvider);
+              _debounce?.cancel();
+            },
+            child: Row(
             children: [
               Image.asset(
                 _getUniversityLogoPath(universityName),
@@ -151,6 +165,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ),
             ],
           ),
+        ),
         ),
         centerTitle: true,
         title: const Text(
