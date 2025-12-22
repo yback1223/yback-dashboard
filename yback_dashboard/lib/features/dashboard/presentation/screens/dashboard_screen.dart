@@ -91,7 +91,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     if (universityName == "건국대학교") {
       return AppAssets.konkukLogo;
     }
-    return AppAssets.konkukNameLogo;
+    return AppAssets.konkukNameLogo; 
   }
 
   @override
@@ -141,6 +141,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 fit: BoxFit.contain,
               ),
               const SizedBox(width: 8),
+              Text(
+                universityName,
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ),
             ],
           ),
         ),
