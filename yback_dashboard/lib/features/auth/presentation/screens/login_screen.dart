@@ -47,7 +47,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     TextField(
                       controller: _idController,
                       decoration: InputDecoration(
-                        labelText: "ID",
+                        labelText: "아이디",
                         prefixIcon: const Icon(Icons.person_outline),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                         filled: true,
