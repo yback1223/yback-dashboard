@@ -35,12 +35,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               color: Colors.white,
               margin: const EdgeInsets.symmetric(horizontal: 24),
               child: Container(
-                width: 400,
+                width: 600,
                 padding: const EdgeInsets.all(40),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Image.asset(AppAssets.loginImage, fit: BoxFit.contain),
+                    Image.asset(AppAssets.loginImageCut, height: 100, width: 600, fit: BoxFit.contain),
                     const SizedBox(height: 40),
 
                     // ID 입력
