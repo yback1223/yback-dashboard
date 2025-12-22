@@ -89,11 +89,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   String _getUniversityLogoPath(String? universityName) {
     if (universityName == "건국대학교") {
-      return AppAssets.konkukLogo;
-    } else if (universityName == "서울대학교") {
-      return AppAssets.illusionistsLogo1;
+      return AppAssets.konkukNameLogo;
     }
-    return AppAssets.illusionistsLogo2; 
+    return AppAssets.konkukNameLogo;
   }
 
   @override

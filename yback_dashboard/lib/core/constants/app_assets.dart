@@ -8,4 +8,5 @@ class AppAssets {
   static const konkukLogo = "$_base/konkuk_logo.png";
   static const backgroundImage = "$_base/background_image.jpg";
   static const loginImage = "$_base/login_image.jpeg";
+  static const konkukNameLogo = "$_base/konkuk_name_logo.png";
 }
