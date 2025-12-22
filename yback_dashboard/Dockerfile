@@ -15,7 +15,8 @@ RUN sed -i "s/flutter.js/flutter.js?v=$(date +%s)/g" build/web/index.html
 
 # 2. flutter.js 안의 main.dart.js 뒤에 ?v=타임스탬프 추가
 RUN sed -i "s/main.dart.js/main.dart.js?v=$(date +%s)/g" build/web/flutter.js
-
+RUN sed -i 's/serviceWorker/no-serviceWorker/g' build/web/index.html
+RUN sed -i 's/flutter_service_worker.js//g' build/web/index.html
 # ------------------------------------------------
 # 2단계: Nginx 배포
 # ------------------------------------------------
