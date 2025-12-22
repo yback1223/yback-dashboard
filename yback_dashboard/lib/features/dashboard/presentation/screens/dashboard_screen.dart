@@ -138,8 +138,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             children: [
               Image.asset(
                 _getUniversityLogoPath(universityName),
-                height: 32,
-                width: 32,
+                height: 40,
+                width: 40,
                 fit: BoxFit.contain,
               ),
               const SizedBox(width: 8),

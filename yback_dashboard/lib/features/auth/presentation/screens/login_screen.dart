@@ -17,20 +17,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF1E3A8A), Color(0xFF3B82F6)],
+      body: Stack(
+        children: [
+          SizedBox(
+            width: double.infinity, // 화면 너비 꽉 채우기
+            height: double.infinity, // 화면 높이 꽉 채우기
+            child: Image.asset(
+              AppAssets.backgroundImage,
+              fit: BoxFit.cover, // 비율 유지하며 화면 꽉 채우기 (잘릴 수 있음)
+            ),
           ),
-        ),
-        child: Center(
+        Center(
           child: SingleChildScrollView(
             child: Card(
               elevation: 10,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              color: Colors.white.withValues(alpha: 0.95),
+              color: Colors.white,
               margin: const EdgeInsets.symmetric(horizontal: 24),
               child: Container(
                 width: 400,
@@ -38,7 +40,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Image.asset(AppAssets.illusionistsLogo1, fit: BoxFit.contain),
+                    Image.asset(AppAssets.loginImage, fit: BoxFit.contain),
                     const SizedBox(height: 40),
 
                     // ID 입력
@@ -93,7 +95,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ),
         ),
-      ),
+      ]),
     );
   }
 

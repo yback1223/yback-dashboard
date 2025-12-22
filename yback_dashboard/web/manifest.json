@@ -1,11 +1,11 @@
 {
-    "name": "yback_dashboard",
-    "short_name": "yback_dashboard",
+    "name": "Dashboard",
+    "short_name": "Dashboard",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Dashboard",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
