@@ -89,7 +89,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   String _getUniversityLogoPath(String? universityName) {
     if (universityName == "건국대학교") {
-      return AppAssets.konkukNameLogo;
+      return AppAssets.konkukLogo;
     }
     return AppAssets.konkukNameLogo;
   }
@@ -136,19 +136,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             children: [
               Image.asset(
                 _getUniversityLogoPath(universityName),
-                height: 40,
-                width: 40,
+                height: 50,
+                width: 50,
                 fit: BoxFit.contain,
               ),
               const SizedBox(width: 8),
-              Text(
-                universityName,
-                style: const TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
             ],
           ),
         ),
