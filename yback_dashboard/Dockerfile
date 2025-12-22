@@ -17,6 +17,7 @@ RUN sed -i "s/flutter.js/flutter.js?v=$(date +%s)/g" build/web/index.html
 RUN sed -i "s/main.dart.js/main.dart.js?v=$(date +%s)/g" build/web/flutter.js
 RUN sed -i 's/serviceWorker/no-serviceWorker/g' build/web/index.html
 RUN sed -i 's/flutter_service_worker.js//g' build/web/index.html
+RUN sed -i "s/favicon.png/favicon.png?v=$(date +%s)/g" build/web/index.html
 # ------------------------------------------------
 # 2단계: Nginx 배포
 # ------------------------------------------------
