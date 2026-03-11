@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <script>
+    // 1. 서비스 워커 제거 로직
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        if (registrations.length > 0) {
+          for (let registration of registrations) {
+            registration.unregister().then(function(success) {
+              if (success) {
+                console.log('좀비 서비스 워커 처단 완료.');
+                // 2. [핵심] 리로드할 때 타임스탬프를 붙여서 캐시를 강제로 뚫어버림
+                const url = new URL(window.location.href);
+                url.searchParams.set('v', Date.now());
+                window.location.replace(url.toString());
+              }
+            });
+          }
+        }
+      });
+    }
+  </script>
   <!--
     If you are serving your web app in a path other than the root, change the
     href value below to reflect the base path you are serving from.
