@@ -13,12 +13,17 @@ RUN grep -q "university" build/web/main.dart.js && exit 1 || echo "Clean Build!"
 # 2단계: 물리적 파일명 변경 및 참조 수정
 WORKDIR /app/build/web
 RUN TIMESTAMP=$(date +%s) && \
+    # 1. 파일명에 타임스탬프 삽입 (물리적 변경)
     mv main.dart.js main.dart.$TIMESTAMP.js && \
     mv flutter.js flutter.$TIMESTAMP.js && \
-    # 서비스 워커 파일이 혹시 생성되었다면 삭제 (중복 방어)
-    rm -f flutter_service_worker.js && \
-    sed -i "s/main.dart.js/main.dart.$TIMESTAMP.js/g" flutter.$TIMESTAMP.js && \
-    sed -i "s/flutter.js/flutter.$TIMESTAMP.js/g" index.html
+    mv flutter_bootstrap.js flutter_bootstrap.$TIMESTAMP.js && \
+    # 2. index.html에서 참조 경로 수정
+    sed -i "s/flutter_bootstrap.js/flutter_bootstrap.$TIMESTAMP.js/g" index.html && \
+    # 3. flutter_bootstrap.js 내부에서 호출하는 파일명 수정
+    sed -i "s/main.dart.js/main.dart.$TIMESTAMP.js/g" flutter_bootstrap.$TIMESTAMP.js && \
+    sed -i "s/flutter.js/flutter.$TIMESTAMP.js/g" flutter_bootstrap.$TIMESTAMP.js && \
+    # 4. (혹시 모르니) PWA 매니페스트 삭제
+    rm -f flutter_service_worker.js manifest.json
 
 # 3단계: Nginx 배포
 FROM nginx:alpine
