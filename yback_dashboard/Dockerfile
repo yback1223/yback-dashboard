@@ -4,6 +4,7 @@ WORKDIR /app
 COPY . .
 RUN flutter pub get
 RUN flutter build web --release
+RUN grep -q "university" build/web/main.dart.js && exit 1 || echo "Clean Build!"
 
 # 👇 [수정] 물리적 파일명 변경 및 참조 수정
 WORKDIR /app/build/web
