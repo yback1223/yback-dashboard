@@ -87,10 +87,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     }
   }
 
-  String _getUniversityLogoPath(String? universityName) {
-    if (universityName == "건국대학교") {
+  String _getServiceGroupNameLogoPath(String? serviceGroupName) {
+    if (serviceGroupName == "건국대학교") {
       return AppAssets.konkukLogo;
-    } else if (universityName == "유한대학교") {
+    } else if (serviceGroupName == "유한대학교") {
       return AppAssets.yuhanLogo;
     }
     return AppAssets.illusionistsLogo2; 
@@ -101,7 +101,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final state = ref.watch(dashboardViewModelProvider);
     final session = ref.watch(authProvider);
     
-    final universityName = session.value?.university ?? '';
+    final serviceGroupName = session.value?.serviceGroupName ?? '';
     final username = session.value?.username ?? '';
 
     // ✅ [추가] 받아온 데이터(state)를 스캔해서 동적으로 옵션 리스트 생성
@@ -151,14 +151,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             child: Row(
               children: [
                 Image.asset(
-                  _getUniversityLogoPath(universityName),
+                  _getServiceGroupNameLogoPath(serviceGroupName),
                   height: 50,
                   width: 50,
                   fit: BoxFit.contain,
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  universityName,
+                  serviceGroupName,
                   style: const TextStyle(
                     color: Colors.black87,
                     fontWeight: FontWeight.bold,

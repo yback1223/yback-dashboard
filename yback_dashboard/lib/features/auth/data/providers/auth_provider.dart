@@ -10,17 +10,17 @@ const storage = FlutterSecureStorage();
 
 class AdminSession {
   final String username;
-  final String university;
+  final String serviceGroupName;
   final String accessToken;
   final String refreshToken;
   final String userRole;  
 
-  AdminSession({required this.username, required this.university, required this.accessToken, required this.refreshToken, required this.userRole});
+  AdminSession({required this.username, required this.serviceGroupName, required this.accessToken, required this.refreshToken, required this.userRole});
 
   // [추가] 객체를 JSON 문자열로 변환 (직렬화)
   Map<String, dynamic> toJson() => {
         'username': username,
-        'university': university,
+        'serviceGroupName': serviceGroupName,
         'accessToken': accessToken,
         'refreshToken': refreshToken,
         'userRole': userRole,
@@ -30,7 +30,7 @@ class AdminSession {
   factory AdminSession.fromJson(Map<String, dynamic> json) {
     return AdminSession(
       username: json['username'],
-      university: json['university'],
+      serviceGroupName: json['serviceGroupName'],
       accessToken: json['accessToken'],
       refreshToken: json['refreshToken'], 
       userRole: json['userRole'],
@@ -84,7 +84,7 @@ class AuthNotifier extends _$AuthNotifier {
       
       final session = AdminSession(
         username: data['username'],
-        university: serviceGroupName, 
+        serviceGroupName: serviceGroupName, 
         userRole: data['userRole'],
         accessToken: data['accessToken'],
         refreshToken: data['refreshToken'],

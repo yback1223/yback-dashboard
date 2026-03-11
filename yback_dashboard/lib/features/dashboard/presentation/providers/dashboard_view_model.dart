@@ -22,7 +22,7 @@ class DashboardViewModel extends _$DashboardViewModel {
     final session = authState.value!; // 세션 확정
 
     final repository = ref.watch(dashboardRepositoryProvider);
-    return await repository.fetchUsers(session.university);
+    return await repository.fetchUsers(session.serviceGroupName);
   }
 
   Future<void> refresh() async {
@@ -34,7 +34,7 @@ class DashboardViewModel extends _$DashboardViewModel {
       if (session == null) return [];
 
       final repository = ref.read(dashboardRepositoryProvider);
-      return await repository.fetchUsers(session.university);
+      return await repository.fetchUsers(session.serviceGroupName);
     });
   }
 }

@@ -10,13 +10,9 @@ class DashboardRepositoryImpl implements DashboardRepository {
   DashboardRepositoryImpl(this._dio);
 
   @override
-  Future<List<UserEntity>> fetchUsers(String targetUniversity) async {
+  Future<List<UserEntity>> fetchUsers(String targetServiceGroupName) async {
     try {
-      // GET /users?university=건국대학교
-      final response = await _dio.get(
-        '/users',
-        queryParameters: {'university': targetUniversity},
-      );
+      final response = await _dio.get('/users');
 
       // Dio는 response.data가 이미 List<dynamic> (JSON Array) 상태입니다.
       final List<dynamic> list = response.data;
