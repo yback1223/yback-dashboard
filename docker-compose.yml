@@ -1,3 +1,5 @@
+# docker-compose.yml
+
 version: '3.8'
 
 services:
@@ -45,6 +47,8 @@ services:
       SPRING_DATA_REDIS_PORT: 6379
     networks:
       - app-network
+    volumes:
+      - ./assets/images:/app/assets/images  # 👈 호스트의 assets 폴더와 백엔드 연결
 
   # 4. Frontend (Flutter + Nginx) - [추가됨]
   frontend:
@@ -57,6 +61,8 @@ services:
       - backend # 백엔드가 뜬 다음에 뜨도록
     networks:
       - app-network
+    volumes:
+      - ./assets/images:/usr/share/nginx/html/assets/images # 👈 프론트엔드에서도 똑같은 곳을 보게 함
 
 networks:
   app-network:

@@ -11,6 +11,7 @@ RUN flutter build web --release --pwa-strategy=none
 RUN grep -q "university" build/web/main.dart.js && exit 1 || echo "Clean Build!"
 
 # 2단계: 물리적 파일명 변경 및 참조 수정
+# 이거였다 시발
 WORKDIR /app/build/web
 RUN TIMESTAMP=$(date +%s) && \
     # 1. 파일명에 타임스탬프 삽입 (물리적 변경)
