@@ -1,0 +1,7 @@
+build/
+.dart_tool/
+.pub-cache/
+ios/
+android/
+*.jks
+*.keystore
