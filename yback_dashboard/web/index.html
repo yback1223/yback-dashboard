@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (let registration of registrations) {
+          registration.unregister().then(function(boolean) {
+            if (boolean) {
+              console.log('과거의 서비스 워커 제거 완료. 페이지를 갱신합니다.');
+              window.location.reload();
+            }
+          });
+        }
+      });
+    }
+  </script>
   <!--
     If you are serving your web app in a path other than the root, change the
     href value below to reflect the base path you are serving from.
