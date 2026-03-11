@@ -1,3 +1,5 @@
+// SecurityConfig.java
+
 package illusionists.serviceAdmin.config;
 
 import illusionists.serviceAdmin.security.JwtAuthenticationFilter;

@@ -1,3 +1,5 @@
+// JwtAuthenticationFilter.java
+
 package illusionists.serviceAdmin.security;
 
 import io.jsonwebtoken.Claims;
@@ -39,9 +41,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				String role = claims.get("role", String.class);
 
 				List<SimpleGrantedAuthority> authorities = (role != null)
-						? List.of(new SimpleGrantedAuthority(role))
-						: Collections.emptyList();
-
+					? List.of(new SimpleGrantedAuthority("ROLE_" + role)) 
+					: Collections.emptyList();
 				Authentication authentication = new UsernamePasswordAuthenticationToken(userId, null, authorities);
 
 				SecurityContextHolder.getContext().setAuthentication(authentication);

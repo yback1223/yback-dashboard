@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.util.List;
+import java.util.ArrayList;
+import lombok.Builder;
 
 @Entity
 @Table(name = "\"admin_user\"")
@@ -27,7 +29,8 @@ public class AdminUser extends Base {
         joinColumns = @JoinColumn(name = "admin_user_id"),
         inverseJoinColumns = @JoinColumn(name = "service_group_id")
     )
-    private List<ServiceGroup> groups;
+	@Builder.Default // [추가] 빌더 사용 시 초기값 빈 리스트 보장
+    private List<ServiceGroup> groups = new ArrayList<>();
 
 	@Column(nullable = false)
 	private String username;
