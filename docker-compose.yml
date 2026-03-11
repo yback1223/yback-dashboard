@@ -48,8 +48,7 @@ services:
     networks:
       - app-network
     volumes:
-      - ./assets/images:/app/assets/images  # 👈 호스트의 assets 폴더와 백엔드 연결
-
+      - /home/ubuntu/project/assets/images:/app/assets/images # 👈 절대 경로로 수정
   # 4. Frontend (Flutter + Nginx) - [추가됨]
   frontend:
     build: ./yback_dashboard # [수정] 프론트엔드 폴더 경로 지정
@@ -62,8 +61,8 @@ services:
     networks:
       - app-network
     volumes:
-      - ./assets/images:/usr/share/nginx/html/assets/images # 👈 프론트엔드에서도 똑같은 곳을 보게 함
-
+      - /home/ubuntu/project/assets/images:/usr/share/nginx/html/assets/images # 👈 절대 경로로 수정
+      
 networks:
   app-network:
     driver: bridge
