@@ -1,3 +1,5 @@
+// AuthService.java
+
 package illusionists.serviceAdmin.service;
 
 import illusionists.serviceAdmin.dto.AuthDto;
@@ -85,11 +87,34 @@ public class AuthService {
 	}
 
 	private AuthDto.LoginResponse buildLoginResponse(AdminUser admin, List<ServiceGroup> groups, String accessToken, String refreshToken) {
+        
+		List<String> names = groups.stream()
+				.map(ServiceGroup::getName)
+				.collect(Collectors.toList());
+		
+		List<String> imageUrls = groups.stream()
+				.map(ServiceGroup::getImageUrl)
+				.collect(Collectors.toList());
+
+		// 대표 이미지 결정 로직 (프론트엔드 로직과 동기화)
+		String representativeImageUrl;
+		if (groups.size() > 1) {
+			// 그룹이 여러 개일 경우 시스템 기본 로고 (Nginx에 미리 올려둔 파일 경로)
+			representativeImageUrl = "/assets/images/illusionists_logo_2.png"; 
+		} else if (groups.size() == 1) {
+			// 그룹이 하나일 경우 해당 그룹의 로고
+			representativeImageUrl = groups.get(0).getImageUrl();
+		} else {
+			representativeImageUrl = "/assets/images/default_logo.png";
+		}
+
 		return AuthDto.LoginResponse.builder()
 				.accessToken(accessToken)
 				.refreshToken(refreshToken)
 				.username(admin.getUsername())
-				.serviceGroupNames(groups.stream().map(ServiceGroup::getName).collect(Collectors.toList()))
+				.serviceGroupNames(names)
+				.serviceGroupImageUrls(imageUrls)
+				.serviceGroupImageUrl(representativeImageUrl) // 프론트엔드가 바로 쓸 수 있게 제공
 				.userRole(admin.getRole().name())
 				.build();
 	}

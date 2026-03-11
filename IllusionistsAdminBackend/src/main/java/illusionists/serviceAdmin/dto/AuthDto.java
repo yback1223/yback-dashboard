@@ -15,6 +15,7 @@ public class AuthDto {
 			String refreshToken,
 			String username,
 			List<String> serviceGroupNames,
+			List<String> serviceGroupImageUrls,
 			String serviceGroupImageUrl,
 			String userRole
 	) {}

@@ -1,3 +1,5 @@
+// ServiceGroup.java
+
 package illusionists.serviceAdmin.entity;
 
 import jakarta.persistence.*;
