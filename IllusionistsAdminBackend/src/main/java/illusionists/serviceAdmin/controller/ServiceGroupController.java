@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springdoc.core.annotations.ParameterObject;
 
 @Tag(name = "Service Group API", description = "서비스 그룹 관리")
 @RestController
@@ -28,7 +29,9 @@ public class ServiceGroupController {
     @Operation(summary = "서비스 그룹 생성")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ServiceGroupResponse> create(
-            @ModelAttribute @Valid ServiceGroupCreateRequest request,
+            // 👇 @ModelAttribute 앞에 @ParameterObject를 붙여라. 
+            // 이게 스웨거 화면에서 'request' 덩어리를 없애고 'name' 칸을 밖으로 꺼내는 스위치다.
+            @ParameterObject @ModelAttribute @Valid ServiceGroupCreateRequest request,
             @RequestPart("image") MultipartFile image) {
         
         ServiceGroupResponse response = serviceGroupService.createServiceGroup(request, image);
