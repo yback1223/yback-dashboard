@@ -104,7 +104,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
-                        .requestMatchers("/api/login", "/api/auth/**", "/api/logout", "/api/signup", "/api/service-groups/**").permitAll()
+                        .requestMatchers("/api/login", "/api/auth/**", "/api/logout", "/api/signup").permitAll()
+                        .requestMatchers("/api/service-groups", "/api/service-groups/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(handler -> handler
