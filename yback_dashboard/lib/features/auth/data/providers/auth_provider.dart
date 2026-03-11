@@ -81,6 +81,7 @@ class AuthNotifier extends _$AuthNotifier {
       } else {
         serviceGroupName = data['serviceGroupNames'][0];
       }
+      print(data['serviceGroupNames']);
       
       final session = AdminSession(
         username: data['username'],
