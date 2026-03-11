@@ -22,4 +22,7 @@ public class ServiceGroup {
 
 	@Column(nullable = false, length = 50)
 	private String name;
+
+	@Column(nullable = false)
+	private String imageUrl;
 }

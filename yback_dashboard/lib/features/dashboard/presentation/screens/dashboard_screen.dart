@@ -1,3 +1,5 @@
+// dashboard_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/dashboard_view_model.dart';
@@ -87,22 +89,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     }
   }
 
-  String _getServiceGroupNameLogoPath(String? serviceGroupName) {
-    if (serviceGroupName == "건국대학교") {
-      return AppAssets.konkukLogo;
-    } else if (serviceGroupName == "유한대학교") {
-      return AppAssets.yuhanLogo;
-    }
-    return AppAssets.illusionistsLogo2; 
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(dashboardViewModelProvider);
     final session = ref.watch(authProvider);
     
+    final serviceGroupImageUrl = session.value?.serviceGroupImageUrl ?? '';
     final serviceGroupName = session.value?.serviceGroupName ?? '';
     final username = session.value?.username ?? '';
+
+    final String fullImageUrl = 'https://dashboard.ainuri.kr$serviceGroupImageUrl';
 
     // ✅ [추가] 받아온 데이터(state)를 스캔해서 동적으로 옵션 리스트 생성
     final List<String> dynamicServiceOptions = state.maybeWhen(
@@ -150,11 +146,30 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             },
             child: Row(
               children: [
-                Image.asset(
-                  _getServiceGroupNameLogoPath(serviceGroupName),
-                  height: 50,
-                  width: 50,
-                  fit: BoxFit.contain,
+                // 👇 [수정] Image.asset을 Image.network로 변경
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    fullImageUrl,
+                    height: 50,
+                    width: 50,
+                    fit: BoxFit.contain,
+                    // 🛡️ 이미지 로딩 중 표시할 위젯
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return const SizedBox(
+                        width: 50, height: 50, 
+                        child: Center(child: CircularProgressIndicator(strokeWidth: 2))
+                      );
+                    },
+                    // 🛡️ 이미지 로딩 실패 시 (404 등) 기본 로고 출력
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        AppAssets.illusionistsLogo2, // 기본 로고
+                        height: 50, width: 50,
+                      );
+                    },
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Text(

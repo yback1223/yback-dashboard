@@ -1,3 +1,5 @@
+// auth_provider.dart
+
 import 'dart:convert'; // JSON 변환용
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -11,16 +13,18 @@ const storage = FlutterSecureStorage();
 class AdminSession {
   final String username;
   final String serviceGroupName;
+  final String serviceGroupImageUrl;
   final String accessToken;
   final String refreshToken;
   final String userRole;  
 
-  AdminSession({required this.username, required this.serviceGroupName, required this.accessToken, required this.refreshToken, required this.userRole});
+  AdminSession({required this.username, required this.serviceGroupName, required this.serviceGroupImageUrl, required this.accessToken, required this.refreshToken, required this.userRole});
 
   // [추가] 객체를 JSON 문자열로 변환 (직렬화)
   Map<String, dynamic> toJson() => {
         'username': username,
         'serviceGroupName': serviceGroupName,
+        'serviceGroupImageUrl': serviceGroupImageUrl,
         'accessToken': accessToken,
         'refreshToken': refreshToken,
         'userRole': userRole,
@@ -31,6 +35,7 @@ class AdminSession {
     return AdminSession(
       username: json['username'],
       serviceGroupName: json['serviceGroupName'],
+      serviceGroupImageUrl: json['serviceGroupImageUrl'],
       accessToken: json['accessToken'],
       refreshToken: json['refreshToken'], 
       userRole: json['userRole'],
@@ -81,12 +86,12 @@ class AuthNotifier extends _$AuthNotifier {
       } else {
         serviceGroupName = data['serviceGroupNames'][0];
       }
-      print(data['serviceGroupNames']);
       
       final session = AdminSession(
         username: data['username'],
         serviceGroupName: serviceGroupName, 
         userRole: data['userRole'],
+        serviceGroupImageUrl: data['serviceGroupImageUrl'],
         accessToken: data['accessToken'],
         refreshToken: data['refreshToken'],
       );
