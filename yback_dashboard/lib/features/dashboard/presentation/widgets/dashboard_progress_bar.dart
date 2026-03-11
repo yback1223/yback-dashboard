@@ -9,7 +9,39 @@ class DashboardProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 날짜 포맷팅
+    // 1. 날짜 계산 로직 (시, 분, 초를 제외한 '날짜' 단위 비교)
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final endDay = DateTime(user.endDate.year, user.endDate.month, user.endDate.day);
+
+    // 차이 계산 (남은 일수)
+    final int difference = endDay.difference(today).inDays;
+
+    // 2. 상태에 따른 텍스트 및 스타일 결정
+    String dDayText;
+    Color barColor;
+    double progressValue;
+    bool isExpired = false;
+
+    if (difference < 0) {
+      // 기간이 지난 경우
+      dDayText = "기간 만료";
+      barColor = Colors.grey.shade600; // 만료 시 차분한 회색
+      progressValue = 1.0; // 바를 꽉 채우거나 0으로 설정 (사용자 선택)
+      isExpired = true;
+    } else if (difference == 0) {
+      // 오늘이 종료일인 경우
+      dDayText = "D-Day";
+      barColor = user.status.color;
+      progressValue = user.dDayPercent.clamp(0.0, 1.0);
+    } else {
+      // 기간이 남은 경우
+      dDayText = "D-$difference";
+      barColor = user.status.color;
+      progressValue = user.dDayPercent.clamp(0.0, 1.0);
+    }
+
+    // 3. 툴팁용 날짜 포맷팅
     final startStr = DateFormat('yyyy-MM-dd').format(user.startDate);
     final endStr = DateFormat('yyyy-MM-dd').format(user.endDate);
 
@@ -25,54 +57,60 @@ class DashboardProgressBar extends StatelessWidget {
         width: 250, // 바 너비 고정
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: SizedBox(
-        height: 20, // ✅ 전체 높이를 딱 20으로 고정 (테이블 행 높이 침범 X)
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10), // 둥글게
-          child: Stack(
-            children: [
-              // 1. 배경이 되는 프로그레스 바 (꽉 채움)
-              LinearProgressIndicator(
-                value: user.dDayPercent.clamp(0.0, 1.0),
-                minHeight: 20, // ✅ 높이 20 (텍스트가 들어갈 만큼 굵게)
-                color: user.status.color,
-                backgroundColor: user.status.color.withValues(alpha: 0.2),
-              ),
+          height: 20, // 전체 높이 고정
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Stack(
+              children: [
+                // 배경 및 프로그레스 바
+                LinearProgressIndicator(
+                  value: progressValue,
+                  minHeight: 20,
+                  color: barColor,
+                  backgroundColor: barColor.withValues(alpha: 0.2),
+                ),
 
-              // 2. 그 위에 올라가는 텍스트 (중앙 정렬)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // 왼쪽: D-Day
-                      Text(
-                        "D-${user.dDay}",
-                        style: const TextStyle(
-                          color: Colors.black, // 바 안이니 흰색 글씨 추천 (또는 대비되는 색)
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11,
-                          shadows: [Shadow(blurRadius: 2, color: Colors.black26)], // 가독성 그림자
+                // 중앙 정렬된 텍스트 레이어
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // 왼쪽: D-Day 또는 상태 메시지
+                        Text(
+                          dDayText,
+                          style: TextStyle(
+                            color: isExpired ? Colors.white : Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                            shadows: const [
+                              Shadow(blurRadius: 2, color: Colors.black12)
+                            ],
+                          ),
                         ),
-                      ),
-                      // 오른쪽: 퍼센트
-                      Text(
-                        '${(user.dDayPercent * 100).toStringAsFixed(0)}%',
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          shadows: [Shadow(blurRadius: 2, color: Colors.black26)],
-                        ),
-                      ),
-                    ],
+                        
+                        // 오른쪽: 퍼센트 (만료되지 않았을 때만 표시)
+                        if (!isExpired)
+                          Text(
+                            '${(progressValue * 100).toStringAsFixed(0)}%',
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              shadows: [
+                                Shadow(blurRadius: 2, color: Colors.black12)
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }

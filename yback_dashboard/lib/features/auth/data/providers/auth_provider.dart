@@ -73,9 +73,18 @@ class AuthNotifier extends _$AuthNotifier {
       final data = response.data; // 이미 Map 상태임
       await storage.write(key: 'accessToken', value: data['accessToken']);
       await storage.write(key: 'refreshToken', value: data['refreshToken']);
+
+      String serviceGroupName = "";
+
+      if(data['serviceGroupNames'].length > 1) {
+        serviceGroupName = "상상력 관리자";
+      } else {
+        serviceGroupName = data['serviceGroupNames'][0];
+      }
+      
       final session = AdminSession(
         username: data['username'],
-        university: data['university'], 
+        university: serviceGroupName, 
         userRole: data['userRole'],
         accessToken: data['accessToken'],
         refreshToken: data['refreshToken'],

@@ -15,11 +15,11 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public List<User> findAllByUniversity(String university) {
+	public List<User> findAllByServiceGroupNames(List<String> serviceGroupNames) {
 		return queryFactory
 				.selectFrom(user)
 				.join(user.group, serviceGroup).fetchJoin()
-				.where(serviceGroup.name.eq(university))
+				.where(serviceGroup.name.in(serviceGroupNames))
 				.fetch();
 	}
 }

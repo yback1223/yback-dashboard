@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -46,7 +48,7 @@ public class AuthService {
 				jwtTokenProvider.getRefreshTokenExpirationSeconds()
 		));
 
-		return buildLoginResponse(admin, accessToken, refreshToken);
+		return buildLoginResponse(admin, admin.getGroups(), accessToken, refreshToken);
 	}
 
 	@Transactional
@@ -79,15 +81,15 @@ public class AuthService {
 				jwtTokenProvider.getRefreshTokenExpirationSeconds()
 		));
 
-		return buildLoginResponse(admin, newAccessToken, newRefreshToken);
+		return buildLoginResponse(admin, admin.getGroups(), newAccessToken, newRefreshToken);
 	}
 
-	private AuthDto.LoginResponse buildLoginResponse(AdminUser admin, String accessToken, String refreshToken) {
+	private AuthDto.LoginResponse buildLoginResponse(AdminUser admin, List<ServiceGroup> groups, String accessToken, String refreshToken) {
 		return AuthDto.LoginResponse.builder()
 				.accessToken(accessToken)
 				.refreshToken(refreshToken)
 				.username(admin.getUsername())
-				.university(admin.getGroup().getName())
+				.serviceGroupNames(groups.stream().map(ServiceGroup::getName).collect(Collectors.toList()))
 				.userRole(admin.getRole().name())
 				.build();
 	}
@@ -98,22 +100,28 @@ public class AuthService {
 	}
 
 	@Transactional
-	public void signup(AuthDto.SignUpRequest request) {
-		if (adminUserRepository.findByLoginId(request.loginId()).isPresent()) {
-			throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
-		}
+    public void signup(AuthDto.SignUpRequest request) {
+        if (adminUserRepository.findByLoginId(request.loginId()).isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
+        }
 
-		ServiceGroup group = serviceGroupRepository.findByName(request.serviceGroupName())
-				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 학교(서비스 그룹)입니다."));
+        List<ServiceGroup> groups = request.serviceGroupNames().stream()
+                .map(name -> serviceGroupRepository.findByName(name)
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 그룹입니다: " + name)))
+                .toList();
 
-		AdminUser newAdmin = AdminUser.builder()
-				.loginId(request.loginId())
-				.password(passwordEncoder.encode(request.password()))
-				.username(request.username())
-				.group(group)
-				.role(UserRole.valueOf(request.role()))
-				.build();
+        if (groups.isEmpty()) {
+            throw new IllegalArgumentException("최소 하나 이상의 서비스 그룹을 선택해야 합니다.");
+        }
 
-		adminUserRepository.save(newAdmin);
-	}
+        AdminUser newAdmin = AdminUser.builder()
+                .loginId(request.loginId())
+                .password(passwordEncoder.encode(request.password()))
+                .username(request.username())
+                .groups(groups)
+                .role(UserRole.valueOf(request.role()))
+                .build();
+
+        adminUserRepository.save(newAdmin);
+    }
 }

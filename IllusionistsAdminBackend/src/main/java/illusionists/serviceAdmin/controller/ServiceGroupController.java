@@ -1,5 +1,6 @@
 package illusionists.serviceAdmin.controller;
 
+import illusionists.serviceAdmin.dto.AdminUserConnectRequest;
 import illusionists.serviceAdmin.dto.ServiceGroupCreateRequest;
 import illusionists.serviceAdmin.dto.ServiceGroupResponse;
 import illusionists.serviceAdmin.service.ServiceGroupService;
@@ -7,7 +8,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Service Group API", description = "서비스 그룹 관리")
@@ -23,6 +28,27 @@ public class ServiceGroupController {
     public ResponseEntity<ServiceGroupResponse> create(@RequestBody @Valid ServiceGroupCreateRequest request) {
         ServiceGroupResponse response = serviceGroupService.createServiceGroup(request);
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "서비스 그룹 이름 조회")
+    @GetMapping
+    public ResponseEntity<List<String>> getServiceGroupNames(@AuthenticationPrincipal Integer userId) {
+        List<String> serviceGroupNames = serviceGroupService.getServiceGroupNamesByAdminId(userId);
+        return ResponseEntity.ok(serviceGroupNames);
+    }
+
+    @Operation(summary = "서비스 그룹과 관리자 연결")
+    @PostMapping("/connect")
+    public ResponseEntity<Void> connectAdminUser(@AuthenticationPrincipal Integer userId, @RequestBody @Valid AdminUserConnectRequest request) {
+        serviceGroupService.connectAdminUserToGroups(userId, request.getGroupNames());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "서비스 그룹과 관리자 연결 해제")
+    @PostMapping("/disconnect")
+    public ResponseEntity<Void> disconnectAdminUser(@AuthenticationPrincipal Integer userId, @RequestBody @Valid AdminUserConnectRequest request) {
+        serviceGroupService.disconnectAdminUserFromGroups(userId, request.getGroupNames());
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "서비스 그룹 삭제")

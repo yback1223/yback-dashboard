@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,9 +37,9 @@ public class UserService {
 		AdminUser admin = adminUserRepository.findById(adminId)
 				.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 관리자입니다."));
 
-		String universityName = admin.getGroup().getName();
+		List<String> serviceGroupNames = admin.getGroups().stream().map(ServiceGroup::getName).collect(Collectors.toList());
 
-		return userRepository.findAllByUniversity(universityName)
+		return userRepository.findAllByServiceGroupNames(serviceGroupNames)
 				.stream()
 				.map(UserResponseDto::from)
 				.toList();
@@ -59,12 +60,12 @@ public class UserService {
 			Sheet sheet = workbook.getSheetAt(0); // 첫 번째 시트
 
 			// 3. 행 반복 (헤더인 0번째 로우는 건너뛰고 1부터 시작)
-			for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+			for (int i = 0; i <= sheet.getLastRowNum(); i++) {
 				Row row = sheet.getRow(i);
 				if (row == null) continue;
 
 				// 엑셀 컬럼 순서: 이름(0), 서비스(1), ID(2), PW(3), 시작(4), 구독기한(5), 비고(6)
-
+				if ("이름".equals(getCellValue(row.getCell(0)))) continue;
 				// 이름
 				String name = getCellValue(row.getCell(0));
 				// 서비스 타입
@@ -154,7 +155,6 @@ public class UserService {
 
 	@Transactional
 	public void deleteAllUsers() {
-		// deleteAllInBatch: 한 방 쿼리로 테이블을 비워버림 (성능 우수)
 		userRepository.deleteAllInBatch();
 	}
 }

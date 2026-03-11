@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import java.util.List;
 
 @Entity
 @Table(name = "\"admin_user\"")
@@ -20,9 +21,13 @@ public class AdminUser extends Base {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "service_group_id", nullable = false)
-	private ServiceGroup group;
+	@ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "admin_user_service_groups",
+        joinColumns = @JoinColumn(name = "admin_user_id"),
+        inverseJoinColumns = @JoinColumn(name = "service_group_id")
+    )
+    private List<ServiceGroup> groups;
 
 	@Column(nullable = false)
 	private String username;
