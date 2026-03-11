@@ -28,7 +28,7 @@ public class ServiceGroupController {
     @Operation(summary = "서비스 그룹 생성")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ServiceGroupResponse> create(
-            @RequestPart("request") @Valid ServiceGroupCreateRequest request,
+            @ModelAttribute @Valid ServiceGroupCreateRequest request,
             @RequestPart("image") MultipartFile image) {
         
         ServiceGroupResponse response = serviceGroupService.createServiceGroup(request, image);
