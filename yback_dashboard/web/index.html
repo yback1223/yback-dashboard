@@ -2,15 +2,21 @@
 <html>
 <head>
   <script>
+    // 1. 서비스 워커 제거 로직
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for (let registration of registrations) {
-          registration.unregister().then(function(boolean) {
-            if (boolean) {
-              console.log('과거의 서비스 워커 제거 완료. 페이지를 갱신합니다.');
-              window.location.reload();
-            }
-          });
+        if (registrations.length > 0) {
+          for (let registration of registrations) {
+            registration.unregister().then(function(success) {
+              if (success) {
+                console.log('좀비 서비스 워커 처단 완료.');
+                // 2. [핵심] 리로드할 때 타임스탬프를 붙여서 캐시를 강제로 뚫어버림
+                const url = new URL(window.location.href);
+                url.searchParams.set('v', Date.now());
+                window.location.replace(url.toString());
+              }
+            });
+          }
         }
       });
     }
