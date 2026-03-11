@@ -18,7 +18,16 @@ class AdminSession {
   final String refreshToken;
   final String userRole;  
 
-  AdminSession({required this.username, required this.serviceGroupName, required this.serviceGroupImageUrl, required this.accessToken, required this.refreshToken, required this.userRole});
+  AdminSession(
+    {
+      required this.username,
+      required this.serviceGroupName,
+      required this.serviceGroupImageUrl,
+      required this.accessToken,
+      required this.refreshToken,
+      required this.userRole
+    }
+  );
 
   // [추가] 객체를 JSON 문자열로 변환 (직렬화)
   Map<String, dynamic> toJson() => {
@@ -79,19 +88,25 @@ class AuthNotifier extends _$AuthNotifier {
       await storage.write(key: 'accessToken', value: data['accessToken']);
       await storage.write(key: 'refreshToken', value: data['refreshToken']);
 
-      String serviceGroupName = "";
-
-      if(data['serviceGroupNames'].length > 1) {
-        serviceGroupName = "상상력 관리자";
-      } else {
-        serviceGroupName = data['serviceGroupNames'][0];
-      }
+      String serviceGroupName = data['serviceGroupNames'].length > 1 
+          ? "상상력 관리자" : data['serviceGroupNames'][0];
       
+      final List<dynamic> urls = data['serviceGroupImageUrls'] ?? [];
+      String finalImageUrl = "";
+      
+      if (urls.length > 1) {
+        // 여러 개면 백엔드가 계산해서 보낸 대표 이미지 사용
+        finalImageUrl = data['serviceGroupImageUrl'] ?? '';
+      } else if (urls.length == 1) {
+        // 하나면 그 리스트의 첫 번째 놈 사용
+        finalImageUrl = urls[0].toString();
+      }
+
       final session = AdminSession(
         username: data['username'],
-        serviceGroupName: serviceGroupName, 
+        serviceGroupName: serviceGroupName,
+        serviceGroupImageUrl: finalImageUrl, // 👈 결정된 하나만 저장
         userRole: data['userRole'],
-        serviceGroupImageUrl: data['serviceGroupImageUrl'],
         accessToken: data['accessToken'],
         refreshToken: data['refreshToken'],
       );
