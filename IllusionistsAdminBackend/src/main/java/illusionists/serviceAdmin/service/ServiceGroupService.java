@@ -49,7 +49,7 @@ public class ServiceGroupService {
         return new ServiceGroupResponse(savedGroup);
     }
     
-    private String saveImage(MultipartFile image) {
+    public String saveImage(MultipartFile image) {
         if (image == null || image.isEmpty()) return null;
         
         try {

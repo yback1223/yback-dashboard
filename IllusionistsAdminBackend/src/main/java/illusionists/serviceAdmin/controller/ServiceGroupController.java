@@ -1,3 +1,5 @@
+// ServiceGroupController.java
+
 package illusionists.serviceAdmin.controller;
 
 import illusionists.serviceAdmin.dto.AdminUserConnectRequest;
@@ -43,6 +45,13 @@ public class ServiceGroupController {
     public ResponseEntity<List<String>> getServiceGroupNames(@AuthenticationPrincipal Integer userId) {
         List<String> serviceGroupNames = serviceGroupService.getServiceGroupNamesByAdminId(userId);
         return ResponseEntity.ok(serviceGroupNames);
+    }
+
+    @Operation(summary = "전체 서비스 그룹 조회")
+    @GetMapping("/all")
+    public ResponseEntity<List<ServiceGroupResponse>> getAllServiceGroups() {
+        List<ServiceGroupResponse> groups = serviceGroupService.getAllServiceGroups();
+        return ResponseEntity.ok(groups);
     }
 
     @Operation(summary = "서비스 그룹과 관리자 연결")

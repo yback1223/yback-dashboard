@@ -1,14 +1,11 @@
-// dashboard_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/dashboard_view_model.dart';
-import '../../domain/entities/user_entity.dart';
+import 'dart:math';
+
+import '../providers/dashboard_users_view_model.dart';
 import '../widgets/dashboard_filter_section.dart';
 import '../widgets/dashboard_table.dart';
-import 'package:yback_dashboard/features/auth/data/providers/auth_provider.dart';
-import 'package:yback_dashboard/core/constants/app_assets.dart';
-import 'dart:async';
+import '../widgets/dashboard_top_nav.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -18,275 +15,125 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  // UI 상태
-  String _searchQuery = "";
-  String _selectedServiceType = "전체";
-  Timer? _debounce;
-  
-  // ❌ [삭제됨] 하드코딩된 리스트 제거
-  // final List<String> _serviceOptions = ["전체", "GPT", "Poe"]; 
-
-  final TextEditingController _searchController = TextEditingController();
-
-  // 정렬 상태
-  int? _sortColumnIndex;
-  bool _isAscending = true;
-
   @override
-  void dispose() {
-    _debounce?.cancel();
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  void _onSort(int columnIndex, bool ascending) {
-    setState(() {
-      if (_sortColumnIndex == columnIndex) {
-        if (_isAscending) {
-          _isAscending = false;
-        } else {
-          _sortColumnIndex = null;
-          _isAscending = true;
-        }
-      } else {
-        _sortColumnIndex = columnIndex;
-        _isAscending = true;
-      }
-    });
-  }
-
-  List<UserEntity> _sortUsers(List<UserEntity> users) {
-    if (_sortColumnIndex == null) return users;
-
-    final sortedUsers = List<UserEntity>.from(users);
-    sortedUsers.sort((a, b) {
-      int comparison = 0;
-      switch (_sortColumnIndex) {
-        case 0:
-          comparison = a.name.compareTo(b.name);
-          break;
-        case 4:
-          comparison = a.dDay.compareTo(b.dDay);
-          break;
-        default:
-          comparison = 0;
-      }
-      return _isAscending ? comparison : -comparison;
-    });
-    return sortedUsers;
-  }
-
-  List<UserEntity> _filterUsers(List<UserEntity> users) {
-    if (_searchQuery.isNotEmpty) {
-      return users.where((user) => 
-        user.name.toLowerCase().contains(_searchQuery.toLowerCase())
-      ).toList();
-    }
-    if (_selectedServiceType == "전체") {
-      return users;
-    } else {
-      return users.where((user) => user.serviceType == _selectedServiceType).toList();
-    }
+  void initState() {
+    super.initState();
+    // [핵심] 화면이 처음 로드될 때 단 한 번만 데이터를 호출한다.
+    Future.microtask(() => 
+      ref.read(dashboardUsersViewModelProvider.notifier).init()
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(dashboardViewModelProvider);
-    final session = ref.watch(authProvider);
-    
-    final serviceGroupImageUrl = session.value?.serviceGroupImageUrl ?? '';
-    final serviceGroupName = session.value?.serviceGroupName ?? '';
-    final username = session.value?.username ?? '';
+    final state = ref.watch(dashboardUsersViewModelProvider);
+    final notifier = ref.read(dashboardUsersViewModelProvider.notifier);
 
-    final String fullImageUrl = 'https://dashboard.ainuri.kr$serviceGroupImageUrl';
-
-    // ✅ [추가] 받아온 데이터(state)를 스캔해서 동적으로 옵션 리스트 생성
-    final List<String> dynamicServiceOptions = state.maybeWhen(
-      data: (users) {
-        // 1. users 리스트에서 serviceType만 뽑아냄 ("GPT", "Poe", "GPT", ...)
-        // 2. toSet()으로 중복 제거 ({"GPT", "Poe"})
-        // 3. toList()로 다시 리스트 변환
-        final distinctTypes = users.map((u) => u.serviceType).toSet().toList();
-        
-        // 4. 가나다순 정렬 (깔끔하게 보이기 위해)
-        distinctTypes.sort();
-        
-        // 5. 맨 앞에 "전체" 옵션 추가
-        return ["전체", ...distinctTypes];
-      },
-      orElse: () => ["전체"], // 데이터 로딩 전이나 에러 시 안전하게 기본값
-    );
-
-    // 🛡️ [안전장치] 만약 선택된 타입("GPT")이 데이터 갱신 후 사라졌다면? -> "전체"로 리셋
-    // (build 안에 setState를 직접 쓸 수 없으므로, 위젯 렌더링 시 값만 보정해서 전달)
-    final safeSelectedServiceType = dynamicServiceOptions.contains(_selectedServiceType)
-        ? _selectedServiceType
-        : "전체";
+    final totalPages = max(1, (state.totalElements / state.pageSize).ceil());
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leadingWidth: 250, 
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16.0),
-
-          child: InkWell(
-            mouseCursor: SystemMouseCursors.click,
-            onTap: () {
-              setState(() {
-                _searchQuery = "";
-                _selectedServiceType = "전체";
-                _sortColumnIndex = null;
-                _isAscending = true;
-                _searchController.clear(); // 텍스트 필드 비우기
-              });
-              ref.invalidate(dashboardViewModelProvider);
-              _debounce?.cancel();
-            },
-            child: Row(
-              children: [
-                // 👇 [수정] Image.asset을 Image.network로 변경
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    fullImageUrl,
-                    height: 50,
-                    width: 50,
-                    fit: BoxFit.contain,
-                    // 🛡️ 이미지 로딩 중 표시할 위젯
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const SizedBox(
-                        width: 50, height: 50, 
-                        child: Center(child: CircularProgressIndicator(strokeWidth: 2))
-                      );
-                    },
-                    // 🛡️ 이미지 로딩 실패 시 (404 등) 기본 로고 출력
-                    errorBuilder: (context, error, stackTrace) {
-                      return Image.asset(
-                        AppAssets.illusionistsLogo2, // 기본 로고
-                        height: 50, width: 50,
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  serviceGroupName,
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        centerTitle: true,
-        title: const Text(
-          "AI 솔루션 계정 현황",
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.black),
-            tooltip: "새로고침",
-            onPressed: () => ref.read(dashboardViewModelProvider.notifier).refresh(),
-          ),
-          const SizedBox(width: 16),
-          if (session.value != null)
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  "$username 님",
-                  style: const TextStyle(
-                    color: Colors.black87, 
-                    fontWeight: FontWeight.bold, 
-                    fontSize: 14
-                  ),
-                ),
-                const Text(
-                  "관리자",
-                  style: TextStyle(color: Colors.grey, fontSize: 10),
-                ),
-              ],
-            ),
-          const SizedBox(width: 10),
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.redAccent),
-            tooltip: "로그아웃",
-            onPressed: () => ref.read(authProvider.notifier).logout(),
-          ),
-          const SizedBox(width: 16),
-        ],
+      backgroundColor: Colors.grey[50],
+      appBar: DashboardTopNav(
+        onLogoTap: () {
+          notifier.setServiceType('전체');
+          notifier.setSearchKeyword('');
+        },
       ),
-      
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // ---------------------------------------------------------
-            // 필터 섹션에 동적 옵션 전달
-            // ---------------------------------------------------------
-            DashboardFilterSection(
-              // 만약 기존 선택값이 목록에 없으면 "전체"를 보여줌
-              selectedServiceType: safeSelectedServiceType, 
-              
-              // 여기서 만든 동적 리스트를 전달
-              serviceOptions: dynamicServiceOptions, 
-              
-              searchController: _searchController,
-              onServiceTypeChanged: (value) {
-                if (value != null) {
-                   setState(() => _selectedServiceType = value);
-                }
-              },
-              onSearchChanged: (value) {
-                // 1. 만약 이미 동작 중인 타이머가 있다면 취소 (타이핑 중이라는 뜻)
-                if (_debounce?.isActive ?? false) _debounce!.cancel();
-
-                // 2. 0.5초(500ms) 뒤에 실행되도록 타이머 예약
-                _debounce = Timer(const Duration(milliseconds: 500), () {
-                  // 3. 0.5초 동안 추가 입력이 없으면 비로소 setState 실행
-                  setState(() {
-                    _searchQuery = value;
-                  });
-                });
-              },
-            ),
-            
+            const DashboardFilterSection(),
             const SizedBox(height: 16),
-
             Expanded(
-              child: state.when(
-                data: (users) {
-                  // 필터링 할 때도 safeSelectedServiceType을 써야 안전함
-                  // (하지만 여기선 _selectedServiceType을 써도 "전체"가 아니면 필터링이 안 될 뿐 에러는 안 남)
-                  final filteredUsers = _filterUsers(users);
-                  final sortedAndFilteredUsers = _sortUsers(filteredUsers);
-                  
-                  return DashboardTable(
-                    users: sortedAndFilteredUsers,
-                    sortColumnIndex: _sortColumnIndex,
-                    sortAscending: _isAscending,
-                    onSort: _onSort,
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => Center(child: Text("에러: $err")),
-              ),
+              child: state.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : state.errorMessage != null
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(state.errorMessage!, style: const TextStyle(color: Colors.red)),
+                              const SizedBox(height: 10),
+                              ElevatedButton(
+                                onPressed: () => notifier.fetchUsers(),
+                                child: const Text("다시 시도"),
+                              )
+                            ],
+                          ),
+                        )
+                      : DashboardTable(
+                          users: state.users,
+                          sortAscending: true,
+                          onSort: (index, ascending) {
+                            print("Column $index 정렬 시도");
+                          },
+                        ),
             ),
+            const SizedBox(height: 16),
+            _buildPagination(state.currentPage, totalPages, notifier),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPagination(int currentPage, int totalPages, DashboardUsersViewModel notifier) {
+    const int maxPagesToShow = 5;
+    int startPage = max(1, currentPage - 2);
+    int endPage = min(totalPages, startPage + maxPagesToShow - 1);
+
+    if (endPage - startPage < maxPagesToShow - 1) {
+      startPage = max(1, endPage - maxPagesToShow + 1);
+    }
+
+    List<Widget> pageButtons = [];
+
+    pageButtons.add(
+      IconButton(
+        icon: const Icon(Icons.chevron_left),
+        onPressed: currentPage > 1 ? () => notifier.setPage(currentPage - 1) : null,
+      ),
+    );
+
+    for (int i = startPage; i <= endPage; i++) {
+      final isSelected = i == currentPage;
+      pageButtons.add(
+        InkWell(
+          onTap: () => notifier.setPage(i),
+          borderRadius: BorderRadius.circular(4),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: isSelected ? Colors.indigo : Colors.transparent,
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: isSelected ? Colors.indigo : Colors.grey.shade300),
+            ),
+            child: Text(
+              i.toString(),
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.black87,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    pageButtons.add(
+      IconButton(
+        icon: const Icon(Icons.chevron_right),
+        onPressed: currentPage < totalPages ? () => notifier.setPage(currentPage + 1) : null,
+      ),
+    );
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: pageButtons,
     );
   }
 }

@@ -1,7 +1,8 @@
+// lib/features/dashboard/presentation/providers/dashboard_view_model.dart
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yback_dashboard/features/dashboard/domain/entities/user_entity.dart';
+import 'package:yback_dashboard/features/admin/domain/entities/user_entity.dart';
 import 'package:yback_dashboard/features/dashboard/presentation/providers/dashboard_repository_provider.dart';
-// [중요] AuthProvider가 있는 경로를 정확히 임포트해야 함
 import 'package:yback_dashboard/features/auth/data/providers/auth_provider.dart'; 
 
 part 'dashboard_view_model.g.dart';

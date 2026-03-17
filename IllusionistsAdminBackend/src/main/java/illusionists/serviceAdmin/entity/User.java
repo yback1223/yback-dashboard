@@ -9,8 +9,15 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
-@Table(name = "\"user\"")
-@Getter
+@Table(
+    name = "\"user\"",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uq_group_email",
+            columnNames = {"service_group_id", "email_id"} // DB 컬럼명 기준
+        )
+    }
+)@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @SuperBuilder
@@ -25,11 +32,12 @@ public class User extends Base {
 	private String name;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "service_group_id", nullable = false) // DB 컬럼명 지정 (Foreign Key)
+	@JoinColumn(name = "service_group_id", nullable = false)
 	private ServiceGroup group;
 
-	@Column(nullable = false, length = 30)
-	private String serviceType;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "service_type_id", nullable = false)
+	private ServiceType serviceType;
 
 	@Column(nullable = false, length = 50)
 	private String emailId;
@@ -45,4 +53,20 @@ public class User extends Base {
 
 	@Column()
 	private String etc;
+
+	public void updateProfile(
+		String name,
+		ServiceType serviceType,
+		String emailId,
+		String password,
+		LocalDateTime startDate,
+		LocalDateTime endDate
+	) {
+        this.name = name;
+        this.serviceType = serviceType;
+        this.emailId = emailId;
+		this.password = password;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
 }

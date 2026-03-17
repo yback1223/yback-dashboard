@@ -1,4 +1,4 @@
-import 'package:yback_dashboard/features/dashboard/domain/entities/user_entity.dart';
+import 'package:yback_dashboard/features/admin/domain/entities/user_entity.dart';
 
 abstract class DashboardRepository {
   Future<List<UserEntity>> fetchUsers(String targetServiceGroupName);

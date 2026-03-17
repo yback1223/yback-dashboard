@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../domain/entities/user_entity.dart';
+import 'package:yback_dashboard/features/admin/domain/entities/user_entity.dart';
+
 
 class DashboardProgressBar extends StatelessWidget {
   final UserEntity user;

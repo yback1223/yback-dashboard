@@ -1,4 +1,6 @@
-import 'package:yback_dashboard/features/dashboard/domain/entities/user_entity.dart';
+// lib/features/dashboard/data/models/user_dto.dart
+
+import 'package:yback_dashboard/features/admin/domain/entities/user_entity.dart';
 
 class UserDto {
   final int id;
@@ -6,6 +8,7 @@ class UserDto {
   final String serviceType;
   final String emailId;
   final String? password;
+  final String? role; // 👈 새로 추가된 권한 필드 (백엔드에서 없을 수도 있으므로 nullable)
   final DateTime startDate;
   final DateTime endDate;
   final int dDay;
@@ -17,6 +20,7 @@ class UserDto {
     required this.serviceType,
     required this.emailId,
     this.password,
+    this.role,
     required this.startDate,
     required this.endDate,
     required this.dDay,
@@ -30,6 +34,7 @@ class UserDto {
       serviceType: json['serviceType'] as String,
       emailId: json['emailId'] as String,
       password: json['password'] as String?,
+      role: json['role'] as String?, // 👈 파싱 추가
       startDate: DateTime.parse(json['startDate'] as String),
       endDate: DateTime.parse(json['endDate'] as String),
       dDay: json['dDay'] as int,
@@ -53,6 +58,7 @@ class UserDto {
       serviceType: serviceType,
       emailId: emailId,
       password: password ?? '',
+      role: role ?? 'USER', // 👈 통합 엔티티의 필수 요구사항 충족 (값이 없으면 기본 유저로 취급)
       startDate: startDate,
       endDate: endDate,
       dDay: dDay,

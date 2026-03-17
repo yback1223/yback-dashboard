@@ -1,3 +1,5 @@
+// UserRole.java
+
 package illusionists.serviceAdmin.entity;
 
 public enum UserRole {

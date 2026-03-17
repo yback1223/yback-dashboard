@@ -34,7 +34,7 @@ final class DashboardViewModelProvider
 }
 
 String _$dashboardViewModelHash() =>
-    r'8ad19f73f3ab1472a54d53aa52d1dde05ddf9102';
+    r'37ce2b9d5abd3e5b335552e0f25029a19d539c6e';
 
 abstract class _$DashboardViewModel extends $AsyncNotifier<List<UserEntity>> {
   FutureOr<List<UserEntity>> build();

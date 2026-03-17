@@ -1,70 +1,162 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/dashboard_users_view_model.dart'; // 👈 정확한 뷰모델 경로 확인
 
-class DashboardFilterSection extends StatelessWidget {
-  final String selectedServiceType;
-  final List<String> serviceOptions;
-  final ValueChanged<String?> onServiceTypeChanged;
-  final TextEditingController searchController;
-  final ValueChanged<String> onSearchChanged;
+class DashboardFilterSection extends ConsumerStatefulWidget {
+  const DashboardFilterSection({super.key});
 
-  const DashboardFilterSection({
-    super.key,
-    required this.selectedServiceType,
-    required this.serviceOptions,
-    required this.onServiceTypeChanged,
-    required this.searchController,
-    required this.onSearchChanged,
-  });
+  @override
+  ConsumerState<DashboardFilterSection> createState() => _DashboardFilterSectionState();
+}
+
+class _DashboardFilterSectionState extends ConsumerState<DashboardFilterSection> {
+  late TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    // 초기 검색어 상태를 컨트롤러에 반영
+    final initialKeyword = ref.read(dashboardUsersViewModelProvider).searchKeyword;
+    _searchController = TextEditingController(text: initialKeyword);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // 검색 집행 함수
+  void _handleSearch() {
+    ref.read(dashboardUsersViewModelProvider.notifier).setSearchKeyword(_searchController.text);
+  }
 
   @override
   Widget build(BuildContext context) {
-    // [핵심] Container로 감싸고 width: double.infinity (width: 100%) 부여
+    final state = ref.watch(dashboardUsersViewModelProvider);
+    final notifier = ref.read(dashboardUsersViewModelProvider.notifier);
+
     return Container(
-      width: double.infinity, 
-      padding: const EdgeInsets.only(bottom: 16), // 아래쪽 여백 살짝 추가
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Wrap(
-        // 이제 부모가 꽉 찼으니, 여기서 center가 비로소 화면 중앙이 됩니다.
-        alignment: WrapAlignment.center, 
-        
+        alignment: WrapAlignment.center,
         crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 16,
-        runSpacing: 10,
-        
+        spacing: 12,
+        runSpacing: 12,
         children: [
-          // 드롭다운
+          // 1. 새로고침 버튼
+          Tooltip(
+            message: "데이터 새로고침",
+            child: IconButton.filledTonal(
+              onPressed: () => notifier.fetchUsers(),
+              icon: const Icon(Icons.refresh),
+              style: IconButton.styleFrom(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 4),
+
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<int>(
+                value: state.pageSize,
+                items: [20, 50, 100].map((int value) {
+                  return DropdownMenuItem<int>(
+                    value: value,
+                    child: Text("$value개씩 보기"),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  if (val != null) notifier.setPageSize(val);
+                },
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 4),
+          Container(  
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
               borderRadius: BorderRadius.circular(8),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
-                value: selectedServiceType,
-                items: serviceOptions.map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
+                value: state.selectedServiceType, 
+                // [수정] availableServiceTypes 사용
+                items: state.availableServiceTypes.map((type) { 
+                  return DropdownMenuItem(value: type, child: Text(type));
                 }).toList(),
-                onChanged: onServiceTypeChanged,
+                onChanged: (val) {
+                  if (val != null) notifier.setServiceType(val);
+                },
               ),
             ),
           ),
-          
-          // 검색창
-          SizedBox(
-            width: 300, 
-            child: TextField(
-              controller: searchController,
-              decoration: const InputDecoration(
-                labelText: "이름 검색",
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
-                isDense: true,
-                contentPadding: EdgeInsets.all(12),
-              ),
-              onChanged: onSearchChanged,
+
+          const SizedBox(width: 4),
+
+          // 3. 검색 영역 (입력창 + 검색 버튼)
+          Container(
+            width: 380,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: const InputDecoration(
+                      hintText: "이름을 입력하세요",
+                      prefixIcon: Icon(Icons.search, size: 20),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    // [핵심] 엔터 키 입력 시 검색 실행
+                    onSubmitted: (_) => _handleSearch(),
+                  ),
+                ),
+                // 검색 버튼
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: ElevatedButton(
+                    onPressed: _handleSearch,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.indigo,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    ),
+                    child: const Text("검색"),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

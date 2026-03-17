@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:yback_dashboard/features/dashboard/data/repositories/dashboard_repository.dart';
-import 'package:yback_dashboard/features/dashboard/domain/entities/user_entity.dart';
+import 'package:yback_dashboard/features/admin/domain/entities/user_entity.dart';
 import 'package:yback_dashboard/features/dashboard/data/models/user_dto.dart';
 
 class DashboardRepositoryImpl implements DashboardRepository {
